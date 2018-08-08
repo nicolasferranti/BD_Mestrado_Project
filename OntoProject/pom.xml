@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.onto</groupId>
+    <artifactId>OntoProject</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>OntoProject</name>
+    <description>Ontologia</description>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.0.4.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+    </properties>
+	
+    <repositories>
+        <repository>
+            <id>acrab.ics.muni.cz</id>
+            <name>Maven Repository</name>
+            <url>http://acrab.ics.muni.cz/~makub/m2repo/</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+			
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+			
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+			
+        </dependency>
+		
+        <!-- Pellet2.3.6 hangs, but pellet-query is needed -->
+        <dependency>
+            <groupId>com.github.ansell.pellet</groupId>
+            <artifactId>pellet-query</artifactId>
+            <version>2.3.6-ansell</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.github.ansell.pellet</groupId>
+                    <artifactId>pellet-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        
+        <!-- https://mvnrepository.com/artifact/com.github.ansell.pellet/pellet-common -->
+        <dependency>
+            <groupId>com.github.ansell.pellet</groupId>
+            <artifactId>pellet-common</artifactId>
+            <version>2.3.6-ansell</version>
+            <exclusions>
+                <exclusion> 
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion> 
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions> 
+        </dependency>
+        
+
+        <dependency>
+            <groupId>pellet</groupId>
+            <artifactId>pellet-core</artifactId>
+            <version>2.2.2</version>
+            <exclusions>
+                <exclusion> 
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion> 
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions> 
+        </dependency>
+    
+    
+        <dependency>
+            <groupId>pellet</groupId>
+            <artifactId>pellet-datatypes</artifactId>
+            <version>2.2.2</version>
+            <exclusions>
+                <exclusion> 
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion> 
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions> 
+        </dependency>
+       
+        
+        <dependency>
+            <groupId>pellet</groupId>
+            <artifactId>pellet-el</artifactId>
+            <version>2.2.2</version>
+            <exclusions>
+                <exclusion> 
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion> 
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions> 
+        </dependency>
+        <dependency>
+            <groupId>pellet</groupId>
+            <artifactId>pellet-rules</artifactId>
+            <version>2.2.2</version>
+            <exclusions>
+                <exclusion> 
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion> 
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions> 
+        </dependency>
+      
+        <dependency>
+            <groupId>pellet</groupId>
+            <artifactId>pellet-owlapiv3</artifactId>
+            <version>2.2.2</version>
+            <exclusions>
+                <exclusion> 
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion> 
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions> 
+        </dependency>
+        
+        
+          
+
+        <dependency>
+            <groupId>net.sourceforge.owlapi</groupId>
+            <artifactId>owlapi-distribution</artifactId>
+            <version>4.2.3</version>
+            <exclusions>
+                <exclusion> 
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion> 
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions> 
+        </dependency>
+        <dependency>
+            <groupId>jdom</groupId>
+            <artifactId>jdom</artifactId>
+            <version>1.0</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20160810</version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <defaultGoal>compile exec:java</defaultGoal>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+			
+        
+            <!-- Java language version -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.2</version>
+                <configuration>
+                    <source>7</source>
+                    <target>7</target>
+                </configuration>
+            </plugin>
+            <!-- run using "mvn exec:java" -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <configuration>
+                    <mainClass>cz.makub.Tutorial</mainClass>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9</version>
+                <configuration>
+                    <links>
+                        <link>http://owlapi.sourceforge.net/javadoc/</link>
+                    </links>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+
+</project>
