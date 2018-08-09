@@ -21,6 +21,14 @@ import java.nio.charset.StandardCharsets;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import ontoManager.Similaridade;
+import ontoManager.TabelaDeSimilaridades;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 @RestController
 public class Controller {
@@ -85,22 +93,52 @@ public class Controller {
 
     }
 
+    public static void executeRules(TabelaDeSimilaridades tbs, String ent1, String ent2, Blazegraph bz1, Blazegraph bz2) {
+        fatherRule(tbs, ent1, ent2, bz1, bz2, (float) 0.9);
+        singleBrotherRule(tbs, ent1, ent2, bz1, bz2, (float) 0.8);
+        brothersRule(tbs, ent1, ent2, bz1, bz2, (float) 0.8);
+    }
+
+    private static void singleBrotherRule(TabelaDeSimilaridades tbs, String ent1, String ent2, Blazegraph bz1, Blazegraph bz2, float degree) {
+        String bro1 = bz1.getSingleBrother(ent1);
+        String bro2 = bz2.getSingleBrother(ent2);
+        if (bro1 != null && bro2 != null) {
+            tbs.addKnownMatches(bro1, bro2, degree * tbs.getSimilarity(ent1, ent2));
+        }
+
+    }
+
+    private static void brothersRule(TabelaDeSimilaridades tbs, String ent1, String ent2, Blazegraph bz1, Blazegraph bz2, float degree) {
+        System.out.println(ent1 + "=>" + bz1.getCountBrothers(ent1));
+        System.out.println(ent2 + "=>" + bz2.getCountBrothers(ent2));
+
+        if (bz1.getCountBrothers(ent1) > 1 && bz2.getCountBrothers(ent2) > 1) {
+            System.out.println("enter bros");
+            ArrayList<String> bros1 = bz1.getBrothers(ent1);
+            ArrayList<String> bros2 = bz2.getBrothers(ent2);
+
+            float avg = (bz1.getCountBrothers(ent1) + bz2.getCountBrothers(ent2)) / 2;
+            System.out.println("level:" + (degree / avg));
+            for (String bro1 : bros1) {
+                for (String bro2 : bros2) {
+                    System.out.println("adding :" + bro1 + "=" + bro2 + "(" + degree / avg + ")");
+                    tbs.addKnownMatches(bro1, bro2, degree / avg);
+                }
+            }
+
+        }
+    }
+
+    private static void fatherRule(TabelaDeSimilaridades tbs, String ent1, String ent2, Blazegraph bz1, Blazegraph bz2, float degree) {
+        String father1 = bz1.getFather(ent1);
+        String father2 = bz2.getFather(ent2);
+        if (father1 != null && father2 != null) {
+            tbs.addKnownMatches(father1, father2, degree * tbs.getSimilarity(ent1, ent2));
+        }
+    }
+
     @GetMapping("/Match")
-    public String computeMatch(String onto1, String onto2, String prealign, String onto1ttl, String onto2ttl) throws OWLOntologyCreationException, IOException {
-        
-        Blazegraph bz = new Blazegraph("Onto1_DB_Nicolas");
-        
-        CurlExec ce = new CurlExec();
-        ce.ArmazenarTtl(bz, "/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/101/onturtle.ttl");
-        
-        //onto1 = readFile("/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/101/onto.rdf", StandardCharsets.UTF_8);
-        //onto1ttl = readFile("/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/101/onturtle.ttl", StandardCharsets.UTF_8);
-        //onto2 = readFile("/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/201/onto.rdf", StandardCharsets.UTF_8);
-
-        // tem q arrumar esses dois
-        onto2ttl = "";
-        //prealign = readFile("/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/benchmark/prealign201.rdf", StandardCharsets.UTF_8);
-
+    public String computeMatch(String prealign, String onto1ttl, String onto2ttl) throws OWLOntologyCreationException, IOException, ParserConfigurationException, SAXException {
         //create temp files
         /*
         String pathOnto1 = "/tmp/" + onto1 + System.nanoTime() + ".owl";
@@ -112,10 +150,49 @@ public class Controller {
         File file = new File(pathOnto1);
         OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
         OWLOntology ontology = manager.loadOntologyFromOntologyDocument(file);
-        */
+         */
+
+        Blazegraph bz = new Blazegraph("Onto1_DB_Nicolas");
+        Blazegraph bz2 = new Blazegraph("Onto2_DB_Nicolas");
+
+        CurlExec ce = new CurlExec();
+        ce.ArmazenarTtl(bz, "/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/101/onturtle.ttl");
+        ce.ArmazenarTtl(bz2, "/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/201/onturtle.ttl");
+
+        ArrayList<String> conceptsOnto1 = bz.consultaClasses();
+        ArrayList<String> conceptsOnto2 = bz2.consultaClasses();
+        System.out.println(conceptsOnto1.size());
+        System.out.println(conceptsOnto2.size());
+
+        TabelaDeSimilaridades tbs = new TabelaDeSimilaridades();
+        for (int i = 0; i < conceptsOnto1.size(); i++) {
+            for (int j = 0; j < conceptsOnto2.size(); j++) {
+                tbs.addSimilaridade(new Similaridade(conceptsOnto1.get(i), conceptsOnto2.get(j)));
+            }
+        }
+
+        //ler refalign
+        //FileInputStream f = new FileInputStream("/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/201/refalign_TESTEREGINA.rdf");
+        File file = new File("/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/201/refalign_TESTEREGINA.rdf");
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        Document document = documentBuilder.parse(file);
+        for (int i = 0; i < document.getElementsByTagName("Cell").getLength(); i++) {
+            String ent1 = document.getElementsByTagName("entity1").item(i).getAttributes().item(0).getNodeValue();
+            String ent2 = document.getElementsByTagName("entity2").item(i).getAttributes().item(0).getNodeValue();
+            String meas = document.getElementsByTagName("measure").item(i).getTextContent();
+            //System.out.println(ent1 + ent2 + Float.parseFloat(meas));
+            tbs.addKnownMatches(ent1, ent2, Float.parseFloat(meas));
+            executeRules(tbs, ent1, ent2, bz, bz2);
+        }
+
+        tbs.printSimilaridades(true);
+
+        //onto1 = readFile("/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/101/onto.rdf", StandardCharsets.UTF_8);
+        //onto1ttl = readFile("/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/101/onturtle.ttl", StandardCharsets.UTF_8);
+        //onto2 = readFile("/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/201/onto.rdf", StandardCharsets.UTF_8);
         
-        
-        return ("hi " + onto1);
+        return (tbs.toXML());
     }
 
     private String readFile(String path, Charset encoding) throws IOException {

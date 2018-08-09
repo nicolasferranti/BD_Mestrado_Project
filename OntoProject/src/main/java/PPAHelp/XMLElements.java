@@ -22,5 +22,11 @@ public interface XMLElements {
     String weight_XML = "weight";
     String concept_XML = "concept";
     String prealign_XML = "pre-alignment";
+    
+    
+    
+    String alignment_XML = "Alignment";
+    String cell_XML = "Cell";
+    String map_XML = "map";
 
 }

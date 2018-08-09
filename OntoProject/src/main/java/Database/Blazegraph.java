@@ -33,12 +33,12 @@ public class Blazegraph {
         this.url = "http://localhost:9999";
         this.dbName = DBNAME;
     }
-    
-    public String getDBname(){
+
+    public String getDBname() {
         return this.dbName;
     }
-    
-    public String getURL(){
+
+    public String getURL() {
         return this.url;
     }
 
@@ -96,6 +96,17 @@ public class Blazegraph {
         return null;
     }
 
+    private ArrayList<String> filtroClasses(ArrayList<String> oldClasses) {
+        ArrayList<String> newClasses = new ArrayList<>();
+        for (String classi : oldClasses) {
+            if (!classi.startsWith("t") || classi.startsWith("http://")) {
+                newClasses.add(classi);
+            }
+        }
+        return newClasses;
+    }
+
+
     /* SELECIONA TODOS OS NÓS DO TIPO CLASSE */
     public ArrayList<String> consultaClasses() {
         String tipo = "query";
@@ -105,7 +116,7 @@ public class Blazegraph {
         for (int i = 0; i < bzReturn.length(); i++) {
             classes.add(bzReturn.getJSONObject(i).getJSONObject("s").getString("value"));
         }
-        return classes;
+        return filtroClasses(classes);
     }
 
     private String extractLabel(String classURI) {
@@ -128,4 +139,48 @@ public class Blazegraph {
         return response.getJSONObject(0).getJSONObject("o").getString("value");
     }
 
+    public int getCountBrothers(String classURI) {
+        String tipo = "query";
+        String query = "select distinct ?o {<" + classURI + "><" + Vocabulario.SUB_CLASS_OF + "> ?pai."
+                + " ?o <" + Vocabulario.SUB_CLASS_OF + "> ?pai."
+                + " ?o rdf:type owl:Class."
+                + " <" + classURI + "> rdf:type owl:Class."
+                + " FILTER (?o != <" + classURI + ">)}";
+        JSONArray response = this.consultaBZ(query, tipo);
+        //System.out.println(response.toString());
+        return response.length();
+    }
+
+    public String getSingleBrother(String classURI) {
+        if (this.getCountBrothers(classURI) == 1) {
+            String tipo = "query";
+            String query = "select distinct ?o {<" + classURI + "><" + Vocabulario.SUB_CLASS_OF + "> ?pai."
+                    + " ?o <" + Vocabulario.SUB_CLASS_OF + "> ?pai."
+                    + " ?o rdf:type owl:Class."
+                    + " <" + classURI + "> rdf:type owl:Class."
+                    + " FILTER (?o != <" + classURI + ">)}";
+            System.out.println(query);
+            JSONArray response = this.consultaBZ(query, tipo);
+            return response.getJSONObject(0).getJSONObject("o").getString("value");
+        }
+        return null;
+    }
+
+    public ArrayList<String> getBrothers(String classURI) {
+        if (this.getCountBrothers(classURI) > 0) {
+            String tipo = "query";
+            String query = "select distinct ?o {<" + classURI + "><" + Vocabulario.SUB_CLASS_OF + "> ?pai."
+                    + " ?o <" + Vocabulario.SUB_CLASS_OF + "> ?pai."
+                    + " ?o rdf:type owl:Class."
+                    + " <" + classURI + "> rdf:type owl:Class."
+                    + " FILTER (?o != <" + classURI + ">)}";
+            JSONArray response = this.consultaBZ(query, tipo);
+            ArrayList<String> brothers = new ArrayList<>();
+            for (int i = 0; i < response.length(); i++) {
+                brothers.add(response.getJSONObject(i).getJSONObject("o").getString("value"));
+            }
+            return brothers;
+        }
+        return null;
+    }
 }
