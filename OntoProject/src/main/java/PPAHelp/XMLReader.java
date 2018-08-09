@@ -15,14 +15,18 @@ import com.hp.hpl.jena.ontology.OntResource;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.util.iterator.Filter;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import org.jdom.Document;
 
 import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.input.SAXBuilder;
 
 /**
  *
@@ -32,11 +36,22 @@ public class XMLReader {
 
     private Collection<List<OntResource>> listOntologies = new ArrayList<List<OntResource>>();
 
-    public XMLReader() throws ClassNotFoundException, NoSuchFieldException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, IOException, InvocationTargetException {
+    public XMLReader(String xmlPath) throws ClassNotFoundException, NoSuchFieldException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, JDOMException, IOException, InvocationTargetException{
+        FileInputStream f = new FileInputStream(xmlPath);
 
+        //Criamos uma classe SAXBuilder que vai processar o XML4
+        SAXBuilder sb = new SAXBuilder();
+        //Este documento agora possui toda a estrutura do arquivo.
+        Document d = sb.build(f);
+        //Recuperamos o elemento root
+        Element root = d.getRootElement();
+        listOntologies = createOntologies(root);
+        //Recuperamos o elemento filho do root que se trata de um Container
+        Element containerPrincipal = root.getChild(XMLElements.container_XML);
+        //listFunctions = createFunctions(containerPrincipal);
     }
 
-    private Collection<List<OntResource>> createOntologies(Element root, String pathOnto1, String pathOnto2) {
+    private Collection<List<OntResource>> createOntologies(Element root) {
         //Strings para guardar o nome e/ou caminho das duas ontologias
         String[] owlNome = new String[2];
 
@@ -51,8 +66,8 @@ public class XMLReader {
         Iterator i = ontologias.iterator();
         Element element1 = (Element) i.next();
         Element element2 = (Element) i.next();
-        owlNome[0] = pathOnto1;//element1.getAttributeValue("id");
-        owlNome[1] = pathOnto2;//element2.getAttributeValue("id");
+        owlNome[0] = element1.getAttributeValue("id");
+        owlNome[1] = element2.getAttributeValue("id");
 
         //Cria ontologia sem associar a uma linguagem especifica.
         OntModel m1 = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_MICRO_RULE_INF);
@@ -143,6 +158,10 @@ public class XMLReader {
                 lista.add(resource);
             }
         }
+    }
+    
+    public Collection<List<OntResource>> getOntology() {
+        return listOntologies;
     }
 
 }

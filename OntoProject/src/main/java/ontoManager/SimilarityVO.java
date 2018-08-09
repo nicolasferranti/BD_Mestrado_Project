@@ -6,47 +6,55 @@
 package ontoManager;
 
 import com.hp.hpl.jena.ontology.OntResource;
+import java.util.ArrayList;
 
 /**
  *
  * @author nicolasferranti
  */
 public class SimilarityVO {
+
     private OntResource elementA;
     private OntResource elementB;
-    private float similarity;
+    private ArrayList<Float> similarity;
 
     public SimilarityVO() {
+        this.similarity = new ArrayList<>();
     }
 
     public SimilarityVO(OntResource elementA, OntResource elementB, float similarity) {
         this.elementA = elementA;
         this.elementB = elementB;
-        this.similarity = similarity;
+        this.similarity = new ArrayList<>();
+        this.similarity.add(similarity);
     }
-    
-    public void setElementA(OntResource elementA){
+
+    public void setElementA(OntResource elementA) {
         this.elementA = elementA;
     }
 
-    public void setElementB(OntResource elementB){
+    public void setElementB(OntResource elementB) {
         this.elementB = elementB;
     }
 
-    public void setSimilarity(float similarity){
-        this.similarity = similarity;
+    public void addSimilarity(float similarity) {
+        this.similarity.add(similarity);
     }
 
-    public OntResource getElementA(){
+    public OntResource getElementA() {
         return elementA;
     }
 
-    public OntResource getElementB(){
+    public OntResource getElementB() {
         return elementB;
     }
 
-    public float getSimilarity(){
-        return similarity;
+    public float getSimilarity() {
+        float sum = 0;
+        for (int i = 0 ; i < this.similarity.size(); i++) {
+            sum += this.similarity.get(i);
+        }
+        return (sum / this.similarity.size());
     }
 
     @Override
