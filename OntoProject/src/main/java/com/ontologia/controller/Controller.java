@@ -16,6 +16,7 @@ import org.semanticweb.owlapi.model.*;
 import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -27,6 +28,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import ontoManager.Similaridade;
 import ontoManager.TabelaDeSimilaridades;
+import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -138,26 +140,25 @@ public class Controller {
     }
 
     @GetMapping("/Match")
-    public String computeMatch(String prealign, String onto1ttl, String onto2ttl) throws OWLOntologyCreationException, IOException, ParserConfigurationException, SAXException {
+    public String computeMatch(String onto1ttl_URL, String onto2ttl_URL, String prealign_URL) throws OWLOntologyCreationException, IOException, ParserConfigurationException, SAXException {
         //create temp files
-        /*
-        String pathOnto1 = "/tmp/" + onto1 + System.nanoTime() + ".owl";
-        PrintWriter writer = new PrintWriter(pathOnto1, "UTF-8");
-        writer.println(onto1);
-        writer.close();
 
-        //read file and load ontology
-        File file = new File(pathOnto1);
-        OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-        OWLOntology ontology = manager.loadOntologyFromOntologyDocument(file);
-         */
-
+        URL u = new URL(onto1ttl_URL);//"http://localhost/onturtle101.ttl"
+        String onto1ttl = "/tmp/onturtle1_" + System.nanoTime() + ".ttl";
+        File f = new File(onto1ttl);
+        FileUtils.copyURLToFile(u, f);
+        
+        URL u2 = new URL(onto2ttl_URL);//"http://localhost/onturtle201.ttl"
+        String onto2ttl = "/tmp/onturtle2_" + System.nanoTime() + ".ttl";
+        File f2 = new File(onto2ttl);
+        FileUtils.copyURLToFile(u2, f2);
+        
         Blazegraph bz = new Blazegraph("Onto1_DB_Nicolas");
         Blazegraph bz2 = new Blazegraph("Onto2_DB_Nicolas");
 
         CurlExec ce = new CurlExec();
-        ce.ArmazenarTtl(bz, "/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/101/onturtle.ttl");
-        ce.ArmazenarTtl(bz2, "/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/201/onturtle.ttl");
+        ce.ArmazenarTtl(bz, onto1ttl);
+        ce.ArmazenarTtl(bz2, onto2ttl);
 
         ArrayList<String> conceptsOnto1 = bz.consultaClasses();
         ArrayList<String> conceptsOnto2 = bz2.consultaClasses();
@@ -170,10 +171,19 @@ public class Controller {
                 tbs.addSimilaridade(new Similaridade(conceptsOnto1.get(i), conceptsOnto2.get(j)));
             }
         }
+        
+
+        
+        URL u_prealign = new URL(prealign_URL);
+        String prealignPath = "/tmp/prealign_" + System.nanoTime() + ".ttl";
+        File fAlign = new File(prealignPath);
+        FileUtils.copyURLToFile(u_prealign, fAlign);
+        
 
         //ler refalign
         //FileInputStream f = new FileInputStream("/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/201/refalign_TESTEREGINA.rdf");
-        File file = new File("/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/201/refalign_TESTEREGINA.rdf");
+        //File file = new File("/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/201/refalign_TESTEREGINA.rdf");
+        File file = new File(prealignPath);
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
         Document document = documentBuilder.parse(file);
@@ -191,7 +201,6 @@ public class Controller {
         //onto1 = readFile("/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/101/onto.rdf", StandardCharsets.UTF_8);
         //onto1ttl = readFile("/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/101/onturtle.ttl", StandardCharsets.UTF_8);
         //onto2 = readFile("/home/nicolasferranti/Documentos/Dissertacao/heuristicontologymatching/TCC-PPOA/xml_2011/201/onto.rdf", StandardCharsets.UTF_8);
-        
         return (tbs.toXML());
     }
 
